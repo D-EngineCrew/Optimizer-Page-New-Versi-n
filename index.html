@@ -4,1055 +4,779 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#171329">
-<title>MediaForge - Optimizador multimedia</title>
+<title>MediaForge - Optimizador</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <style>
-:root {
-  --bg:#100e1b;
-  --panel:#1b1829;
-  --panel2:#242039;
-  --border:#39334f;
-  --text:#f5f1ff;
-  --muted:#aaa3bf;
-  --accent:#a78bfa;
-  --purple:#7c3aed;
-  --green:#6ee7b7;
-}
-
 * {
-  box-sizing:border-box;
+  box-sizing: border-box;
 }
 
 body {
-  margin:0;
-  background:radial-gradient(circle at 80% 0,#302052,transparent 35%),var(--bg);
-  color:var(--text);
-  font-family:system-ui,Arial,sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #0d0b18;
+  color: #fff;
+  font-family: Arial, sans-serif;
 }
 
-main {
-  max-width:1000px;
-  margin:auto;
-  padding:25px 15px 50px;
+.container {
+  max-width: 850px;
+  margin: auto;
 }
 
 header {
-  text-align:center;
-  margin:20px 0 30px;
+  text-align: center;
+  margin-bottom: 25px;
 }
 
-.logo {
-  display:inline-grid;
-  place-items:center;
-  width:60px;
-  height:60px;
-  border-radius:18px;
-  background:linear-gradient(135deg,#a78bfa,#6d28d9);
-  font-size:30px;
-}
-
-h1 {
-  font-size:36px;
-  margin:10px 0 3px;
+header h1 {
+  color: #b58aff;
+  margin-bottom: 8px;
 }
 
 header p {
-  color:var(--muted);
-  margin:0;
+  color: #aaa;
 }
 
 .panel {
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:18px;
-  padding:20px;
-  margin:15px 0;
+  background: #191528;
+  border: 1px solid #34264f;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 18px;
 }
 
-.drop {
-  display:block;
-  border:2px dashed #66558e;
-  border-radius:15px;
-  padding:30px 15px;
-  text-align:center;
-  background:#241e36;
-  cursor:pointer;
-  transition:.2s;
+#drop {
+  border: 2px dashed #8658c9;
+  border-radius: 14px;
+  padding: 35px 15px;
+  text-align: center;
+  cursor: pointer;
+  background: #211934;
+  transition: .2s;
 }
 
-.drop:active {
-  background:#30234a;
-  border-color:var(--accent);
+#drop:hover {
+  background: #302044;
 }
 
-.drop strong {
-  display:block;
-  font-size:18px;
-  margin:10px 0 5px;
+#drop strong {
+  color: #c5a3ff;
+  display: block;
+  font-size: 18px;
+  margin-bottom: 8px;
 }
 
-small,.muted {
-  color:var(--muted);
+#drop span {
+  color: #aaa;
+  font-size: 13px;
 }
 
-input[type=file] {
-  display:none;
-}
-
-.controls {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
-  gap:15px;
-  margin-top:20px;
-}
-
-.field label {
-  display:block;
-  color:var(--muted);
-  font-size:13px;
-  margin-bottom:7px;
+select, button {
+  border: none;
+  border-radius: 9px;
+  padding: 12px;
+  font-size: 14px;
 }
 
 select {
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:var(--panel2);
-  color:white;
-  font-size:14px;
-}
-
-.actions {
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  margin-top:18px;
+  width: 100%;
+  margin-top: 10px;
+  background: #292039;
+  color: white;
+  border: 1px solid #65458f;
 }
 
 button {
-  border:0;
-  border-radius:11px;
-  padding:12px 16px;
-  font-size:14px;
-  font-weight:bold;
-  color:white;
-  background:var(--purple);
-  cursor:pointer;
+  cursor: pointer;
+  background: #8658c9;
+  color: white;
+  font-weight: bold;
+  transition: .2s;
 }
 
-button.secondary {
-  background:#39334f;
+button:hover {
+  background: #a276e9;
 }
 
 button:disabled {
-  opacity:.4;
-  cursor:not-allowed;
+  opacity: .45;
+  cursor: not-allowed;
 }
 
-.progress {
-  height:8px;
-  background:#39334f;
-  border-radius:20px;
-  overflow:hidden;
-  margin-top:18px;
+.main-button {
+  width: 100%;
+  margin-top: 15px;
 }
 
-.bar {
-  height:100%;
-  width:0;
-  background:linear-gradient(90deg,#8b5cf6,#c4b5fd);
-  transition:width .2s;
+.secondary {
+  background: #34264f;
+}
+
+.danger {
+  background: #743b57;
+}
+
+.file-card {
+  background: #211b30;
+  border: 1px solid #403052;
+  border-radius: 12px;
+  padding: 14px;
+  margin-top: 12px;
+}
+
+.file-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.file-name {
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
+.file-info {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 7px;
+}
+
+.file-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.file-actions button {
+  flex: 1;
+}
+
+progress {
+  width: 100%;
+  height: 9px;
+  margin-top: 12px;
+  accent-color: #a276e9;
 }
 
 .status {
-  color:var(--muted);
-  font-size:13px;
-  margin-top:12px;
+  font-size: 12px;
+  color: #c5a3ff;
+  margin-top: 8px;
 }
 
-.list {
-  display:grid;
-  gap:10px;
-  margin-top:15px;
+#summary {
+  color: #c5a3ff;
+  margin-top: 12px;
+  font-size: 13px;
 }
 
-.item {
-  display:grid;
-  grid-template-columns:55px minmax(0,1fr) auto;
-  align-items:center;
-  gap:12px;
-  background:var(--panel2);
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:10px;
+#message {
+  color: #c5a3ff;
+  text-align: center;
+  margin-top: 12px;
+  font-size: 13px;
 }
 
-.thumb {
-  width:55px;
-  height:55px;
-  object-fit:cover;
-  border-radius:9px;
-  background:#100e1b;
+.hidden {
+  display: none;
 }
 
-.fileicon {
-  display:grid;
-  place-items:center;
-  font-size:25px;
-}
-
-.filename {
-  font-weight:bold;
-  overflow-wrap:anywhere;
-}
-
-.meta {
-  font-size:12px;
-  color:var(--muted);
-}
-
-.item-actions {
-  display:flex;
-  gap:7px;
-}
-
-.mini {
-  padding:8px 10px;
-  font-size:12px;
-  text-decoration:none;
-  border-radius:8px;
-  color:white;
-  background:var(--purple);
-  cursor:pointer;
-}
-
-.summary {
-  display:flex;
-  flex-wrap:wrap;
-  gap:15px;
-  color:var(--muted);
-  font-size:13px;
-  margin-top:15px;
-}
-
-.summary b {
-  color:var(--green);
-}
-
-.empty {
-  text-align:center;
-  padding:25px;
-  color:var(--muted);
-}
-
-.note {
-  color:var(--muted);
-  font-size:12px;
-  margin-top:15px;
-}
-
-@media(max-width:550px) {
-  .item {
-    grid-template-columns:45px minmax(0,1fr);
-  }
-
-  .thumb {
-    width:45px;
-    height:45px;
-  }
-
-  .item-actions {
-    grid-column:2;
-  }
-
-  h1 {
-    font-size:29px;
-  }
-
-  .panel {
-    padding:14px;
-  }
+footer {
+  text-align: center;
+  color: #777;
+  font-size: 12px;
+  margin-top: 25px;
 }
 </style>
 </head>
 
 <body>
 
-<main>
+<div class="container">
 
 <header>
-  <div class="logo">✦</div>
   <h1>MediaForge</h1>
-  <p>Optimizador y compresor multimedia</p>
+  <p>Optimizador y compresor de imágenes y videos</p>
 </header>
 
-<section class="panel">
+<div class="panel">
 
-  <div class="drop" id="drop" role="button" tabindex="0">
-    <div style="font-size:35px">☁️</div>
-    <strong>Seleccionar imágenes y videos</strong>
-    <small>Pulsa aquí para abrir Files o arrastra tus archivos.</small>
+  <div id="drop">
+    <strong>＋ Seleccionar archivos</strong>
+    <span>Imágenes y videos desde tu dispositivo</span>
+    <br><br>
+    <span>También puedes arrastrar archivos aquí</span>
   </div>
 
-  <!-- Selector nativo de archivos Android -->
+  <!-- Selector general de archivos de Android -->
   <input
     id="files"
     type="file"
-    accept="image/*,video/*"
+    accept="*/*"
     multiple
+    hidden
   >
 
-  <div class="controls">
+  <label for="quality">Nivel de compresión</label>
 
-    <div class="field">
-      <label>Tipo de optimizador</label>
-      <select id="mode">
-        <option value="auto">Automático</option>
-        <option value="image">Solo imágenes</option>
-        <option value="video">Solo videos</option>
-      </select>
-    </div>
+  <select id="quality">
+    <option value="high">Alta calidad</option>
+    <option value="medium" selected>Media</option>
+    <option value="ultra">Ultra compresión</option>
+  </select>
 
-    <div class="field">
-      <label>Nivel de compresión</label>
-      <select id="level">
-        <option value="high">Alto - Mejor calidad</option>
-        <option value="medium" selected>Medio - Equilibrado</option>
-        <option value="ultra">Ultra - Menor tamaño</option>
-      </select>
-    </div>
+  <button id="processAll" class="main-button" disabled>
+    Comprimir todos los archivos
+  </button>
 
+  <button id="downloadZip" class="main-button secondary" disabled>
+    Descargar todos en ZIP
+  </button>
+
+  <button id="clearAll" class="main-button danger" disabled>
+    Limpiar archivos
+  </button>
+
+  <div id="summary"></div>
+  <div id="message"></div>
+
+</div>
+
+<div class="panel">
+  <h3>Archivos seleccionados</h3>
+  <div id="fileList">
+    <p style="color:#888;text-align:center">
+      Todavía no has seleccionado archivos.
+    </p>
   </div>
+</div>
 
-  <div class="actions">
-    <button id="optimize">⚡ Optimizar archivos</button>
+<footer>
+  MediaForge · Optimizador multimedia
+</footer>
 
-    <button class="secondary" id="zip" disabled>
-      ⬇ Descargar todo en ZIP
-    </button>
-
-    <button class="secondary" id="clear">
-      Limpiar lista
-    </button>
-  </div>
-
-  <div class="progress">
-    <div class="bar" id="bar"></div>
-  </div>
-
-  <div class="status" id="status">
-    Añade archivos para comenzar.
-  </div>
-
-  <div class="summary" id="summary"></div>
-
-</section>
-
-<section class="panel">
-
-  <strong>Archivos seleccionados</strong>
-  <span class="muted" id="count">0 archivos</span>
-
-  <div class="list" id="list">
-    <div class="empty">Todavía no hay archivos.</div>
-  </div>
-
-  <p class="note">
-    Tus archivos se procesan localmente en el navegador.
-    No se envían a ningún servidor.
-  </p>
-
-</section>
-
-<p class="note">
-  Los videos se exportan en WebM mediante MediaRecorder.
-  La compatibilidad depende del navegador y del dispositivo.
-</p>
-
-</main>
-
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+</div>
 
 <script>
+const fileInput = document.getElementById("files");
+const drop = document.getElementById("drop");
+const fileList = document.getElementById("fileList");
+const quality = document.getElementById("quality");
 
-const $ = id => document.getElementById(id);
+const processAllButton = document.getElementById("processAll");
+const downloadZipButton = document.getElementById("downloadZip");
+const clearAllButton = document.getElementById("clearAll");
 
-let entries = [];
-let busy = false;
+const summary = document.getElementById("summary");
+const message = document.getElementById("message");
+
+let files = [];
+let processing = false;
 
 const presets = {
   high: {
-    quality:0.78,
-    width:2560,
-    bitrate:2800000
+    imageQuality: 0.85,
+    videoBitrate: 2500000,
+    maxWidth: 1920
   },
-
   medium: {
-    quality:0.62,
-    width:1920,
-    bitrate:1600000
+    imageQuality: 0.65,
+    videoBitrate: 1200000,
+    maxWidth: 1280
   },
-
   ultra: {
-    quality:0.42,
-    width:1280,
-    bitrate:800000
+    imageQuality: 0.40,
+    videoBitrate: 550000,
+    maxWidth: 854
   }
 };
 
 function formatSize(bytes) {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024)
+    return (bytes / 1024).toFixed(1) + " KB";
 
-  const units = ["B","KB","MB","GB"];
-
-  let i = 0;
-
-  while(bytes >= 1024 && i < units.length-1) {
-    bytes /= 1024;
-    i++;
-  }
-
-  return bytes.toFixed(i ? 2 : 0)+" "+units[i];
+  return (bytes / (1024 * 1024)).toFixed(2) + " MB";
 }
 
-function safeName(name) {
-  return name.replace(/[\\/:*?"<>|]/g,"_");
+function isMedia(file) {
+  return file.type.startsWith("image/") ||
+         file.type.startsWith("video/");
 }
 
-function setStatus(message,progress) {
-
-  $("status").textContent = message;
-
-  if(progress !== undefined) {
-    $("bar").style.width = progress+"%";
-  }
-}
-
-// ======================================
-// SELECTOR NATIVO DE ANDROID / FILES
-// ======================================
-
-const fileInput = $("files");
-const drop = $("drop");
-
-function openFilePicker() {
-
-  if(busy) return;
-
-  // Debe ejecutarse directamente desde el toque del usuario.
+// Selector general de Android
+drop.addEventListener("click", () => {
   fileInput.click();
-}
+});
 
-drop.addEventListener("click",openFilePicker);
+fileInput.addEventListener("change", event => {
+  const selectedFiles = Array.from(event.target.files);
 
-drop.addEventListener("keydown",event => {
+  const mediaFiles = selectedFiles.filter(isMedia);
 
-  if(event.key === "Enter" || event.key === " ") {
-    event.preventDefault();
-    openFilePicker();
+  addFiles(mediaFiles);
+
+  if (selectedFiles.length !== mediaFiles.length) {
+    message.textContent =
+      "Se omitieron los archivos que no eran imágenes o videos.";
+  } else {
+    message.textContent = "";
   }
 
-});
-
-fileInput.addEventListener("change",event => {
-
-  addFiles(event.target.files);
-
-  // Permite volver a seleccionar el mismo archivo.
+  // Permite volver a seleccionar el mismo archivo
   fileInput.value = "";
-
 });
 
-// ======================================
-// AÑADIR ARCHIVOS
-// ======================================
+// Arrastrar archivos
+drop.addEventListener("dragover", event => {
+  event.preventDefault();
+  drop.style.background = "#38234f";
+});
 
-function addFiles(files) {
+drop.addEventListener("dragleave", () => {
+  drop.style.background = "#211934";
+});
 
-  for(const file of files) {
+drop.addEventListener("drop", event => {
+  event.preventDefault();
+  drop.style.background = "#211934";
 
-    if(
-      !file.type.startsWith("image/") &&
-      !file.type.startsWith("video/")
-    ) continue;
+  const selectedFiles = Array.from(event.dataTransfer.files);
+  addFiles(selectedFiles.filter(isMedia));
+});
 
-    entries.push({
-      file,
-      result:null,
-      error:null,
-      outputName:null
+function addFiles(newFiles) {
+  if (processing) return;
+
+  newFiles.forEach(file => {
+    files.push({
+      id: crypto.randomUUID(),
+      original: file,
+      result: null,
+      resultName: null,
+      status: "Pendiente",
+      progress: 0
+    });
+  });
+
+  renderFiles();
+}
+
+function renderFiles() {
+  fileList.innerHTML = "";
+
+  if (!files.length) {
+    fileList.innerHTML =
+      '<p style="color:#888;text-align:center">Todavía no hay archivos.</p>';
+  }
+
+  files.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "file-card";
+
+    const type = item.original.type.startsWith("video/")
+      ? "Video"
+      : "Imagen";
+
+    card.innerHTML = `
+      <div class="file-top">
+        <div class="file-name"></div>
+        <span>${type}</span>
+      </div>
+
+      <div class="file-info">
+        Original: ${formatSize(item.original.size)}
+      </div>
+
+      <progress max="100" value="${item.progress}"></progress>
+
+      <div class="status">${item.status}</div>
+
+      <div class="file-actions">
+        <button class="download secondary" disabled>
+          Descargar
+        </button>
+        <button class="remove danger">
+          Eliminar
+        </button>
+      </div>
+    `;
+
+    card.querySelector(".file-name").textContent =
+      item.original.name;
+
+    const downloadButton = card.querySelector(".download");
+
+    downloadButton.disabled = !item.result;
+
+    downloadButton.addEventListener("click", () => {
+      downloadFile(item);
     });
 
-  }
+    card.querySelector(".remove").addEventListener("click", () => {
+      if (processing) return;
 
-  render();
-}
+      files = files.filter(f => f.id !== item.id);
+      renderFiles();
+    });
 
-// ======================================
-// MOSTRAR ARCHIVOS
-// ======================================
-
-function render() {
-
-  $("count").textContent = entries.length+" archivos";
-
-  $("zip").disabled =
-    !entries.some(e => e.result) || busy;
-
-  const list = $("list");
-
-  list.innerHTML = "";
-
-  if(!entries.length) {
-
-    list.innerHTML =
-      '<div class="empty">Todavía no hay archivos.</div>';
-
-    return;
-  }
-
-  entries.forEach(e => {
-
-    const row = document.createElement("div");
-    row.className = "item";
-
-    const visual = document.createElement(
-      e.file.type.startsWith("image/") ? "img" : "div"
-    );
-
-    visual.className =
-      e.file.type.startsWith("image/")
-      ? "thumb"
-      : "thumb fileicon";
-
-    if(visual.tagName === "IMG") {
-
-      visual.src = URL.createObjectURL(e.file);
-
-    } else {
-
-      visual.textContent = "▶";
-
-    }
-
-    const info = document.createElement("div");
-
-    const name = document.createElement("div");
-    name.className = "filename";
-    name.textContent = e.file.name;
-
-    const meta = document.createElement("div");
-    meta.className = "meta";
-
-    meta.textContent =
-      formatSize(e.file.size)+" · "+
-      (e.result
-        ? "Optimizado: "+formatSize(e.result.size)
-        : e.error
-        ? "Error: "+e.error
-        : "Pendiente");
-
-    info.append(name,meta);
-
-    const actions = document.createElement("div");
-    actions.className = "item-actions";
-
-    if(e.result) {
-
-      const download = document.createElement("a");
-
-      download.className = "mini";
-      download.textContent = "Descargar";
-
-      download.href = URL.createObjectURL(e.result);
-      download.download = e.outputName;
-
-      actions.append(download);
-
-    }
-
-    const remove = document.createElement("button");
-
-    remove.className = "mini secondary";
-    remove.textContent = "Quitar";
-
-    remove.onclick = () => {
-
-      entries = entries.filter(x => x !== e);
-
-      render();
-
-    };
-
-    actions.append(remove);
-
-    row.append(visual,info,actions);
-
-    list.append(row);
-
+    fileList.appendChild(card);
   });
 
+  updateControls();
 }
 
-// ======================================
-// OPTIMIZAR IMÁGENES
-// ======================================
+function updateControls() {
+  const hasFiles = files.length > 0;
 
-function canvasBlob(canvas,type,quality) {
+  processAllButton.disabled = !hasFiles || processing;
+  clearAllButton.disabled = !hasFiles || processing;
 
-  return new Promise((resolve,reject) => {
+  downloadZipButton.disabled =
+    !files.some(item => item.result) || processing;
 
+  const completed = files.filter(item => item.result).length;
+
+  summary.textContent =
+    `${files.length} archivos · ${completed} comprimidos`;
+}
+
+function updateItem(item, status, progress) {
+  item.status = status;
+  item.progress = progress;
+
+  const cards = fileList.querySelectorAll(".file-card");
+  const index = files.findIndex(f => f.id === item.id);
+
+  if (cards[index]) {
+    cards[index].querySelector(".status").textContent = status;
+    cards[index].querySelector("progress").value = progress;
+
+    cards[index].querySelector(".download").disabled =
+      !item.result;
+  }
+
+  updateControls();
+}
+
+function getPreset() {
+  return presets[quality.value];
+}
+
+function canvasToBlob(canvas, type, quality) {
+  return new Promise((resolve, reject) => {
     canvas.toBlob(blob => {
-
-      if(blob) resolve(blob);
-
-      else reject(new Error("No se pudo codificar la imagen."));
-
-    },type,quality);
-
+      if (blob) resolve(blob);
+      else reject(new Error("No se pudo generar la imagen."));
+    }, type, quality);
   });
-
 }
 
-async function optimizeImage(file,preset) {
+// COMPRESIÓN DE IMÁGENES
+async function compressImage(item) {
+  const settings = getPreset();
 
-  const bitmap = await createImageBitmap(file);
+  const bitmap = await createImageBitmap(item.original);
 
-  const scale = Math.min(
-    1,
-    preset.width / Math.max(bitmap.width,bitmap.height)
-  );
+  let width = bitmap.width;
+  let height = bitmap.height;
+
+  if (width > settings.maxWidth) {
+    const ratio = settings.maxWidth / width;
+    width = settings.maxWidth;
+    height = Math.round(height * ratio);
+  }
 
   const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
 
-  canvas.width = Math.max(1,Math.round(bitmap.width*scale));
+  const context = canvas.getContext("2d");
+  context.drawImage(bitmap, 0, 0, width, height);
 
-  canvas.height = Math.max(1,Math.round(bitmap.height*scale));
+  bitmap.close();
 
-  const ctx = canvas.getContext("2d");
+  updateItem(item, "Comprimiendo imagen...", 70);
 
-  ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
-
-  bitmap.close?.();
-
-  const type =
-    file.type === "image/png"
-    ? "image/png"
-    : "image/jpeg";
-
-  const blob = await canvasBlob(
+  const blob = await canvasToBlob(
     canvas,
-    type,
-    preset.quality
+    "image/webp",
+    settings.imageQuality
   );
 
-  return {
-    blob,
-    ext:type === "image/png" ? "png" : "jpg"
-  };
+  item.result = blob;
 
+  const baseName = item.original.name.replace(/\.[^.]+$/, "");
+  item.resultName = baseName + ".webp";
+
+  updateItem(item, "Imagen comprimida", 100);
 }
 
-// ======================================
-// OPTIMIZAR VIDEOS
-// ======================================
+// COMPRESIÓN DE VIDEOS
+async function compressVideo(item) {
+  const settings = getPreset();
 
-async function optimizeVideo(file,preset) {
-
-  if(!window.MediaRecorder) {
-    throw new Error("MediaRecorder no disponible.");
+  if (!window.MediaRecorder ||
+      !HTMLCanvasElement.prototype.captureStream) {
+    throw new Error(
+      "Tu navegador no permite comprimir videos con esta función."
+    );
   }
 
   const video = document.createElement("video");
 
-  video.muted = true;
+  video.muted = false;
   video.playsInline = true;
-  video.preload = "auto";
+  video.preload = "metadata";
 
-  const source = URL.createObjectURL(file);
+  const sourceUrl = URL.createObjectURL(item.original);
+  video.src = sourceUrl;
 
-  video.src = source;
-
-  await new Promise((resolve,reject) => {
-
+  await new Promise((resolve, reject) => {
     video.onloadedmetadata = resolve;
-
     video.onerror = () => reject(
       new Error("No se pudo leer el video.")
     );
-
   });
 
-  const level = $("level").value;
+  let width = video.videoWidth;
+  let height = video.videoHeight;
 
-  const maxWidth =
-    level === "ultra" ? 854 :
-    level === "medium" ? 1280 : 1920;
-
-  const scale = Math.min(
-    1,
-    maxWidth/video.videoWidth
-  );
+  if (width > settings.maxWidth) {
+    const ratio = settings.maxWidth / width;
+    width = settings.maxWidth;
+    height = Math.round(height * ratio);
+  }
 
   const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
 
-  canvas.width = Math.max(
-    2,
-    Math.round(video.videoWidth*scale/2)*2
-  );
+  const context = canvas.getContext("2d");
 
-  canvas.height = Math.max(
-    2,
-    Math.round(video.videoHeight*scale/2)*2
-  );
+  const canvasStream = canvas.captureStream(30);
 
-  const ctx = canvas.getContext("2d");
+  let audioTracks = [];
 
-  const stream = canvas.captureStream(24);
+  try {
+    const sourceStream = video.captureStream
+      ? video.captureStream()
+      : video.mozCaptureStream
+      ? video.mozCaptureStream()
+      : null;
 
-  const mime = [
+    if (sourceStream) {
+      audioTracks = sourceStream.getAudioTracks();
+    }
+  } catch (error) {
+    console.warn("No se pudo capturar el audio:", error);
+  }
+
+  const combinedStream = new MediaStream([
+    ...canvasStream.getVideoTracks(),
+    ...audioTracks
+  ]);
+
+  const mimeTypes = [
     "video/webm;codecs=vp9,opus",
     "video/webm;codecs=vp8,opus",
     "video/webm"
-  ].find(type => MediaRecorder.isTypeSupported(type));
+  ];
 
-  let recorder;
+  const mimeType = mimeTypes.find(type =>
+    MediaRecorder.isTypeSupported(type)
+  );
 
-  try {
-
-    recorder = new MediaRecorder(stream,{
-      mimeType:mime,
-      videoBitsPerSecond:preset.bitrate
-    });
-
-  } catch(error) {
-
-    stream.getTracks().forEach(t => t.stop());
-
-    URL.revokeObjectURL(source);
-
-    throw new Error("No se pudo iniciar el codificador.");
-
+  if (!mimeType) {
+    URL.revokeObjectURL(sourceUrl);
+    throw new Error("Formato de video no compatible.");
   }
+
+  const recorder = new MediaRecorder(combinedStream, {
+    mimeType,
+    videoBitsPerSecond: settings.videoBitrate
+  });
 
   const chunks = [];
 
   recorder.ondataavailable = event => {
-
-    if(event.data.size) {
+    if (event.data && event.data.size > 0) {
       chunks.push(event.data);
     }
-
   };
 
-  const finished = new Promise((resolve,reject) => {
-
-    recorder.onstop = () => resolve(
-      new Blob(chunks,{
-        type:recorder.mimeType || "video/webm"
-      })
-    );
-
-    recorder.onerror = () => reject(
-      new Error("Error durante la compresión.")
-    );
-
+  const recordingFinished = new Promise(resolve => {
+    recorder.onstop = resolve;
   });
 
   recorder.start(500);
 
-  await video.play();
+  let animationId;
 
-  await new Promise((resolve,reject) => {
+  function drawFrame() {
+    if (video.ended || video.paused) return;
 
-    function draw() {
+    context.drawImage(video, 0, 0, width, height);
 
-      if(video.ended) {
-        resolve();
-        return;
-      }
+    const progress = video.duration
+      ? Math.min(99, (video.currentTime / video.duration) * 100)
+      : 0;
 
-      ctx.drawImage(
-        video,
-        0,0,
-        canvas.width,
-        canvas.height
-      );
+    updateItem(
+      item,
+      "Comprimiendo video...",
+      Math.round(progress)
+    );
 
-      requestAnimationFrame(draw);
+    animationId = requestAnimationFrame(drawFrame);
+  }
 
-    }
-
-    video.onended = resolve;
-
-    video.onerror = reject;
-
-    draw();
-
-  });
-
-  if(recorder.state !== "inactive") {
+  video.onended = () => {
+    cancelAnimationFrame(animationId);
     recorder.stop();
-  }
-
-  const blob = await finished;
-
-  stream.getTracks().forEach(t => t.stop());
-
-  video.pause();
-
-  video.removeAttribute("src");
-
-  URL.revokeObjectURL(source);
-
-  if(!blob.size) {
-    throw new Error("Video vacío.");
-  }
-
-  return {
-    blob,
-    ext:"webm"
   };
 
-}
+  video.onerror = () => {
+    cancelAnimationFrame(animationId);
 
-// ======================================
-// PROCESAR ARCHIVOS
-// ======================================
+    if (recorder.state !== "inactive") {
+      recorder.stop();
+    }
+  };
 
-async function optimizeOne(entry,preset) {
+  await video.play();
+  drawFrame();
 
-  const mode = $("mode").value;
+  await recordingFinished;
 
-  const isImage = entry.file.type.startsWith("image/");
+  canvasStream.getTracks().forEach(track => track.stop());
+  combinedStream.getTracks().forEach(track => track.stop());
 
-  if(mode === "image" && !isImage) {
-    throw new Error("Selecciona solamente imágenes.");
+  const blob = new Blob(chunks, {
+    type: "video/webm"
+  });
+
+  URL.revokeObjectURL(sourceUrl);
+
+  if (!blob.size) {
+    throw new Error("No se pudo generar el video.");
   }
 
-  if(mode === "video" && isImage) {
-    throw new Error("Selecciona solamente videos.");
-  }
+  item.result = blob;
 
-  const output = isImage
-    ? await optimizeImage(entry.file,preset)
-    : await optimizeVideo(entry.file,preset);
+  const baseName = item.original.name.replace(/\.[^.]+$/, "");
+  item.resultName = baseName + ".webm";
 
-  entry.result = output.blob;
-
-  entry.outputName =
-    safeName(entry.file.name.replace(/\.[^.]+$/,""))+
-    "_optimizado."+
-    output.ext;
-
-  entry.error = null;
-
+  updateItem(item, "Video comprimido", 100);
 }
 
-// ======================================
-// BOTÓN OPTIMIZAR
-// ======================================
+// PROCESAR TODOS
+processAllButton.addEventListener("click", async () => {
+  if (processing) return;
 
-$("optimize").onclick = async () => {
+  processing = true;
+  updateControls();
 
-  if(busy || !entries.length) return;
+  message.textContent = "Procesando archivos...";
 
-  busy = true;
-
-  $("optimize").disabled = true;
-
-  $("zip").disabled = true;
-
-  const todo = entries.filter(e => !e.result);
-
-  const preset = presets[$("level").value];
-
-  let completed = 0;
-
-  for(const entry of todo) {
-
-    setStatus(
-      "Procesando "+entry.file.name+
-      " ("+(completed+1)+"/"+todo.length+")",
-      completed/Math.max(1,todo.length)*100
-    );
+  for (const item of files) {
+    if (item.result) continue;
 
     try {
-
-      await optimizeOne(entry,preset);
-
-    } catch(error) {
-
-      entry.error = error.message;
-
+      if (item.original.type.startsWith("image/")) {
+        await compressImage(item);
+      } else if (item.original.type.startsWith("video/")) {
+        await compressVideo(item);
+      }
+    } catch (error) {
+      console.error(error);
+      updateItem(item, "Error: " + error.message, 0);
     }
-
-    completed++;
-
-    render();
-
-    setStatus(
-      "Procesados "+completed+" de "+todo.length,
-      completed/Math.max(1,todo.length)*100
-    );
-
   }
 
-  busy = false;
+  processing = false;
 
-  $("optimize").disabled = false;
+  message.textContent = "Proceso terminado.";
+  renderFiles();
+});
 
-  const successful = entries.filter(e => e.result);
+// DESCARGAR INDIVIDUAL
+function downloadFile(item) {
+  if (!item.result) return;
 
-  const before = successful.reduce(
-    (sum,e) => sum+e.file.size,0
-  );
+  const url = URL.createObjectURL(item.result);
+  const link = document.createElement("a");
 
-  const after = successful.reduce(
-    (sum,e) => sum+e.result.size,0
-  );
+  link.href = url;
+  link.download = item.resultName;
 
-  const saving = before
-    ? Math.round((1-after/before)*100)
-    : 0;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
 
-  $("summary").innerHTML = `
-    <span>Correctos: <b>${successful.length}</b></span>
-    <span>Original: ${formatSize(before)}</span>
-    <span>Optimizado: <b>${formatSize(after)}</b></span>
-    <span>Ahorro: <b>${saving}%</b></span>
-  `;
+  setTimeout(() => URL.revokeObjectURL(url), 3000);
+}
 
-  setStatus("Optimización terminada.",100);
+// DESCARGAR ZIP
+downloadZipButton.addEventListener("click", async () => {
+  const completed = files.filter(item => item.result);
 
-  render();
+  if (!completed.length) return;
 
-};
+  message.textContent = "Preparando ZIP...";
 
-// ======================================
-// DESCARGAR TODO EN ZIP
-// ======================================
+  const zip = new JSZip();
 
-$("zip").onclick = async () => {
-
-  const ready = entries.filter(e => e.result);
-
-  if(!ready.length || !window.JSZip) return;
-
-  $("zip").disabled = true;
-
-  setStatus("Preparando ZIP...");
+  completed.forEach(item => {
+    zip.file(item.resultName, item.result);
+  });
 
   try {
-
-    const zip = new JSZip();
-
-    ready.forEach(entry => {
-
-      zip.file(entry.outputName,entry.result);
-
+    const blob = await zip.generateAsync({
+      type: "blob",
+      compression: "DEFLATE",
+      compressionOptions: {
+        level: 5
+      }
     });
 
-    const blob = await zip.generateAsync(
-      {
-        type:"blob",
-        compression:"DEFLATE",
-        compressionOptions:{level:6}
-      },
-      metadata => {
-
-        setStatus(
-          "Creando ZIP... "+
-          Math.round(metadata.percent)+"%",
-          metadata.percent
-        );
-
-      }
-    );
-
     const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
 
-    const a = document.createElement("a");
+    link.href = url;
+    link.download = "MediaForge-Optimized.zip";
 
-    a.href = url;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
 
-    a.download = "MediaForge_optimizados.zip";
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
 
-    a.click();
-
-    setTimeout(() => URL.revokeObjectURL(url),30000);
-
-    setStatus("ZIP generado correctamente.",100);
-
-  } catch(error) {
-
-    setStatus("Error al crear ZIP: "+error.message);
-
+    message.textContent = "ZIP generado correctamente.";
+  } catch (error) {
+    message.textContent = "Error al crear el ZIP.";
+    console.error(error);
   }
-
-  $("zip").disabled = false;
-
-};
-
-// ======================================
-// LIMPIAR LISTA
-// ======================================
-
-$("clear").onclick = () => {
-
-  if(busy) return;
-
-  entries = [];
-
-  $("summary").textContent = "";
-
-  $("bar").style.width = "0%";
-
-  setStatus("Lista limpia.");
-
-  render();
-
-};
-
-// ======================================
-// ARRASTRAR Y SOLTAR
-// ======================================
-
-["dragenter","dragover"].forEach(event => {
-
-  drop.addEventListener(event,e => {
-
-    e.preventDefault();
-
-    drop.classList.add("over");
-
-  });
-
 });
 
-["dragleave","drop"].forEach(event => {
+// LIMPIAR
+clearAllButton.addEventListener("click", () => {
+  if (processing) return;
 
-  drop.addEventListener(event,e => {
+  files = [];
+  fileInput.value = "";
 
-    e.preventDefault();
-
-    drop.classList.remove("over");
-
-  });
-
+  message.textContent = "";
+  renderFiles();
 });
 
-drop.addEventListener("drop",event => {
-
-  addFiles(event.dataTransfer.files);
-
-});
-
-render();
-
+renderFiles();
 </script>
 
 </body>
-        </html>
-        
+</html>
