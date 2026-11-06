@@ -1,0 +1,1058 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#171329">
+<title>MediaForge - Optimizador multimedia</title>
+
+<style>
+:root {
+  --bg:#100e1b;
+  --panel:#1b1829;
+  --panel2:#242039;
+  --border:#39334f;
+  --text:#f5f1ff;
+  --muted:#aaa3bf;
+  --accent:#a78bfa;
+  --purple:#7c3aed;
+  --green:#6ee7b7;
+}
+
+* {
+  box-sizing:border-box;
+}
+
+body {
+  margin:0;
+  background:radial-gradient(circle at 80% 0,#302052,transparent 35%),var(--bg);
+  color:var(--text);
+  font-family:system-ui,Arial,sans-serif;
+}
+
+main {
+  max-width:1000px;
+  margin:auto;
+  padding:25px 15px 50px;
+}
+
+header {
+  text-align:center;
+  margin:20px 0 30px;
+}
+
+.logo {
+  display:inline-grid;
+  place-items:center;
+  width:60px;
+  height:60px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#a78bfa,#6d28d9);
+  font-size:30px;
+}
+
+h1 {
+  font-size:36px;
+  margin:10px 0 3px;
+}
+
+header p {
+  color:var(--muted);
+  margin:0;
+}
+
+.panel {
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:20px;
+  margin:15px 0;
+}
+
+.drop {
+  display:block;
+  border:2px dashed #66558e;
+  border-radius:15px;
+  padding:30px 15px;
+  text-align:center;
+  background:#241e36;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.drop:active {
+  background:#30234a;
+  border-color:var(--accent);
+}
+
+.drop strong {
+  display:block;
+  font-size:18px;
+  margin:10px 0 5px;
+}
+
+small,.muted {
+  color:var(--muted);
+}
+
+input[type=file] {
+  display:none;
+}
+
+.controls {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:15px;
+  margin-top:20px;
+}
+
+.field label {
+  display:block;
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:7px;
+}
+
+select {
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--panel2);
+  color:white;
+  font-size:14px;
+}
+
+.actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:18px;
+}
+
+button {
+  border:0;
+  border-radius:11px;
+  padding:12px 16px;
+  font-size:14px;
+  font-weight:bold;
+  color:white;
+  background:var(--purple);
+  cursor:pointer;
+}
+
+button.secondary {
+  background:#39334f;
+}
+
+button:disabled {
+  opacity:.4;
+  cursor:not-allowed;
+}
+
+.progress {
+  height:8px;
+  background:#39334f;
+  border-radius:20px;
+  overflow:hidden;
+  margin-top:18px;
+}
+
+.bar {
+  height:100%;
+  width:0;
+  background:linear-gradient(90deg,#8b5cf6,#c4b5fd);
+  transition:width .2s;
+}
+
+.status {
+  color:var(--muted);
+  font-size:13px;
+  margin-top:12px;
+}
+
+.list {
+  display:grid;
+  gap:10px;
+  margin-top:15px;
+}
+
+.item {
+  display:grid;
+  grid-template-columns:55px minmax(0,1fr) auto;
+  align-items:center;
+  gap:12px;
+  background:var(--panel2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:10px;
+}
+
+.thumb {
+  width:55px;
+  height:55px;
+  object-fit:cover;
+  border-radius:9px;
+  background:#100e1b;
+}
+
+.fileicon {
+  display:grid;
+  place-items:center;
+  font-size:25px;
+}
+
+.filename {
+  font-weight:bold;
+  overflow-wrap:anywhere;
+}
+
+.meta {
+  font-size:12px;
+  color:var(--muted);
+}
+
+.item-actions {
+  display:flex;
+  gap:7px;
+}
+
+.mini {
+  padding:8px 10px;
+  font-size:12px;
+  text-decoration:none;
+  border-radius:8px;
+  color:white;
+  background:var(--purple);
+  cursor:pointer;
+}
+
+.summary {
+  display:flex;
+  flex-wrap:wrap;
+  gap:15px;
+  color:var(--muted);
+  font-size:13px;
+  margin-top:15px;
+}
+
+.summary b {
+  color:var(--green);
+}
+
+.empty {
+  text-align:center;
+  padding:25px;
+  color:var(--muted);
+}
+
+.note {
+  color:var(--muted);
+  font-size:12px;
+  margin-top:15px;
+}
+
+@media(max-width:550px) {
+  .item {
+    grid-template-columns:45px minmax(0,1fr);
+  }
+
+  .thumb {
+    width:45px;
+    height:45px;
+  }
+
+  .item-actions {
+    grid-column:2;
+  }
+
+  h1 {
+    font-size:29px;
+  }
+
+  .panel {
+    padding:14px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<main>
+
+<header>
+  <div class="logo">✦</div>
+  <h1>MediaForge</h1>
+  <p>Optimizador y compresor multimedia</p>
+</header>
+
+<section class="panel">
+
+  <div class="drop" id="drop" role="button" tabindex="0">
+    <div style="font-size:35px">☁️</div>
+    <strong>Seleccionar imágenes y videos</strong>
+    <small>Pulsa aquí para abrir Files o arrastra tus archivos.</small>
+  </div>
+
+  <!-- Selector nativo de archivos Android -->
+  <input
+    id="files"
+    type="file"
+    accept="image/*,video/*"
+    multiple
+  >
+
+  <div class="controls">
+
+    <div class="field">
+      <label>Tipo de optimizador</label>
+      <select id="mode">
+        <option value="auto">Automático</option>
+        <option value="image">Solo imágenes</option>
+        <option value="video">Solo videos</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Nivel de compresión</label>
+      <select id="level">
+        <option value="high">Alto - Mejor calidad</option>
+        <option value="medium" selected>Medio - Equilibrado</option>
+        <option value="ultra">Ultra - Menor tamaño</option>
+      </select>
+    </div>
+
+  </div>
+
+  <div class="actions">
+    <button id="optimize">⚡ Optimizar archivos</button>
+
+    <button class="secondary" id="zip" disabled>
+      ⬇ Descargar todo en ZIP
+    </button>
+
+    <button class="secondary" id="clear">
+      Limpiar lista
+    </button>
+  </div>
+
+  <div class="progress">
+    <div class="bar" id="bar"></div>
+  </div>
+
+  <div class="status" id="status">
+    Añade archivos para comenzar.
+  </div>
+
+  <div class="summary" id="summary"></div>
+
+</section>
+
+<section class="panel">
+
+  <strong>Archivos seleccionados</strong>
+  <span class="muted" id="count">0 archivos</span>
+
+  <div class="list" id="list">
+    <div class="empty">Todavía no hay archivos.</div>
+  </div>
+
+  <p class="note">
+    Tus archivos se procesan localmente en el navegador.
+    No se envían a ningún servidor.
+  </p>
+
+</section>
+
+<p class="note">
+  Los videos se exportan en WebM mediante MediaRecorder.
+  La compatibilidad depende del navegador y del dispositivo.
+</p>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+<script>
+
+const $ = id => document.getElementById(id);
+
+let entries = [];
+let busy = false;
+
+const presets = {
+  high: {
+    quality:0.78,
+    width:2560,
+    bitrate:2800000
+  },
+
+  medium: {
+    quality:0.62,
+    width:1920,
+    bitrate:1600000
+  },
+
+  ultra: {
+    quality:0.42,
+    width:1280,
+    bitrate:800000
+  }
+};
+
+function formatSize(bytes) {
+
+  const units = ["B","KB","MB","GB"];
+
+  let i = 0;
+
+  while(bytes >= 1024 && i < units.length-1) {
+    bytes /= 1024;
+    i++;
+  }
+
+  return bytes.toFixed(i ? 2 : 0)+" "+units[i];
+}
+
+function safeName(name) {
+  return name.replace(/[\\/:*?"<>|]/g,"_");
+}
+
+function setStatus(message,progress) {
+
+  $("status").textContent = message;
+
+  if(progress !== undefined) {
+    $("bar").style.width = progress+"%";
+  }
+}
+
+// ======================================
+// SELECTOR NATIVO DE ANDROID / FILES
+// ======================================
+
+const fileInput = $("files");
+const drop = $("drop");
+
+function openFilePicker() {
+
+  if(busy) return;
+
+  // Debe ejecutarse directamente desde el toque del usuario.
+  fileInput.click();
+}
+
+drop.addEventListener("click",openFilePicker);
+
+drop.addEventListener("keydown",event => {
+
+  if(event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    openFilePicker();
+  }
+
+});
+
+fileInput.addEventListener("change",event => {
+
+  addFiles(event.target.files);
+
+  // Permite volver a seleccionar el mismo archivo.
+  fileInput.value = "";
+
+});
+
+// ======================================
+// AÑADIR ARCHIVOS
+// ======================================
+
+function addFiles(files) {
+
+  for(const file of files) {
+
+    if(
+      !file.type.startsWith("image/") &&
+      !file.type.startsWith("video/")
+    ) continue;
+
+    entries.push({
+      file,
+      result:null,
+      error:null,
+      outputName:null
+    });
+
+  }
+
+  render();
+}
+
+// ======================================
+// MOSTRAR ARCHIVOS
+// ======================================
+
+function render() {
+
+  $("count").textContent = entries.length+" archivos";
+
+  $("zip").disabled =
+    !entries.some(e => e.result) || busy;
+
+  const list = $("list");
+
+  list.innerHTML = "";
+
+  if(!entries.length) {
+
+    list.innerHTML =
+      '<div class="empty">Todavía no hay archivos.</div>';
+
+    return;
+  }
+
+  entries.forEach(e => {
+
+    const row = document.createElement("div");
+    row.className = "item";
+
+    const visual = document.createElement(
+      e.file.type.startsWith("image/") ? "img" : "div"
+    );
+
+    visual.className =
+      e.file.type.startsWith("image/")
+      ? "thumb"
+      : "thumb fileicon";
+
+    if(visual.tagName === "IMG") {
+
+      visual.src = URL.createObjectURL(e.file);
+
+    } else {
+
+      visual.textContent = "▶";
+
+    }
+
+    const info = document.createElement("div");
+
+    const name = document.createElement("div");
+    name.className = "filename";
+    name.textContent = e.file.name;
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+
+    meta.textContent =
+      formatSize(e.file.size)+" · "+
+      (e.result
+        ? "Optimizado: "+formatSize(e.result.size)
+        : e.error
+        ? "Error: "+e.error
+        : "Pendiente");
+
+    info.append(name,meta);
+
+    const actions = document.createElement("div");
+    actions.className = "item-actions";
+
+    if(e.result) {
+
+      const download = document.createElement("a");
+
+      download.className = "mini";
+      download.textContent = "Descargar";
+
+      download.href = URL.createObjectURL(e.result);
+      download.download = e.outputName;
+
+      actions.append(download);
+
+    }
+
+    const remove = document.createElement("button");
+
+    remove.className = "mini secondary";
+    remove.textContent = "Quitar";
+
+    remove.onclick = () => {
+
+      entries = entries.filter(x => x !== e);
+
+      render();
+
+    };
+
+    actions.append(remove);
+
+    row.append(visual,info,actions);
+
+    list.append(row);
+
+  });
+
+}
+
+// ======================================
+// OPTIMIZAR IMÁGENES
+// ======================================
+
+function canvasBlob(canvas,type,quality) {
+
+  return new Promise((resolve,reject) => {
+
+    canvas.toBlob(blob => {
+
+      if(blob) resolve(blob);
+
+      else reject(new Error("No se pudo codificar la imagen."));
+
+    },type,quality);
+
+  });
+
+}
+
+async function optimizeImage(file,preset) {
+
+  const bitmap = await createImageBitmap(file);
+
+  const scale = Math.min(
+    1,
+    preset.width / Math.max(bitmap.width,bitmap.height)
+  );
+
+  const canvas = document.createElement("canvas");
+
+  canvas.width = Math.max(1,Math.round(bitmap.width*scale));
+
+  canvas.height = Math.max(1,Math.round(bitmap.height*scale));
+
+  const ctx = canvas.getContext("2d");
+
+  ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+
+  bitmap.close?.();
+
+  const type =
+    file.type === "image/png"
+    ? "image/png"
+    : "image/jpeg";
+
+  const blob = await canvasBlob(
+    canvas,
+    type,
+    preset.quality
+  );
+
+  return {
+    blob,
+    ext:type === "image/png" ? "png" : "jpg"
+  };
+
+}
+
+// ======================================
+// OPTIMIZAR VIDEOS
+// ======================================
+
+async function optimizeVideo(file,preset) {
+
+  if(!window.MediaRecorder) {
+    throw new Error("MediaRecorder no disponible.");
+  }
+
+  const video = document.createElement("video");
+
+  video.muted = true;
+  video.playsInline = true;
+  video.preload = "auto";
+
+  const source = URL.createObjectURL(file);
+
+  video.src = source;
+
+  await new Promise((resolve,reject) => {
+
+    video.onloadedmetadata = resolve;
+
+    video.onerror = () => reject(
+      new Error("No se pudo leer el video.")
+    );
+
+  });
+
+  const level = $("level").value;
+
+  const maxWidth =
+    level === "ultra" ? 854 :
+    level === "medium" ? 1280 : 1920;
+
+  const scale = Math.min(
+    1,
+    maxWidth/video.videoWidth
+  );
+
+  const canvas = document.createElement("canvas");
+
+  canvas.width = Math.max(
+    2,
+    Math.round(video.videoWidth*scale/2)*2
+  );
+
+  canvas.height = Math.max(
+    2,
+    Math.round(video.videoHeight*scale/2)*2
+  );
+
+  const ctx = canvas.getContext("2d");
+
+  const stream = canvas.captureStream(24);
+
+  const mime = [
+    "video/webm;codecs=vp9,opus",
+    "video/webm;codecs=vp8,opus",
+    "video/webm"
+  ].find(type => MediaRecorder.isTypeSupported(type));
+
+  let recorder;
+
+  try {
+
+    recorder = new MediaRecorder(stream,{
+      mimeType:mime,
+      videoBitsPerSecond:preset.bitrate
+    });
+
+  } catch(error) {
+
+    stream.getTracks().forEach(t => t.stop());
+
+    URL.revokeObjectURL(source);
+
+    throw new Error("No se pudo iniciar el codificador.");
+
+  }
+
+  const chunks = [];
+
+  recorder.ondataavailable = event => {
+
+    if(event.data.size) {
+      chunks.push(event.data);
+    }
+
+  };
+
+  const finished = new Promise((resolve,reject) => {
+
+    recorder.onstop = () => resolve(
+      new Blob(chunks,{
+        type:recorder.mimeType || "video/webm"
+      })
+    );
+
+    recorder.onerror = () => reject(
+      new Error("Error durante la compresión.")
+    );
+
+  });
+
+  recorder.start(500);
+
+  await video.play();
+
+  await new Promise((resolve,reject) => {
+
+    function draw() {
+
+      if(video.ended) {
+        resolve();
+        return;
+      }
+
+      ctx.drawImage(
+        video,
+        0,0,
+        canvas.width,
+        canvas.height
+      );
+
+      requestAnimationFrame(draw);
+
+    }
+
+    video.onended = resolve;
+
+    video.onerror = reject;
+
+    draw();
+
+  });
+
+  if(recorder.state !== "inactive") {
+    recorder.stop();
+  }
+
+  const blob = await finished;
+
+  stream.getTracks().forEach(t => t.stop());
+
+  video.pause();
+
+  video.removeAttribute("src");
+
+  URL.revokeObjectURL(source);
+
+  if(!blob.size) {
+    throw new Error("Video vacío.");
+  }
+
+  return {
+    blob,
+    ext:"webm"
+  };
+
+}
+
+// ======================================
+// PROCESAR ARCHIVOS
+// ======================================
+
+async function optimizeOne(entry,preset) {
+
+  const mode = $("mode").value;
+
+  const isImage = entry.file.type.startsWith("image/");
+
+  if(mode === "image" && !isImage) {
+    throw new Error("Selecciona solamente imágenes.");
+  }
+
+  if(mode === "video" && isImage) {
+    throw new Error("Selecciona solamente videos.");
+  }
+
+  const output = isImage
+    ? await optimizeImage(entry.file,preset)
+    : await optimizeVideo(entry.file,preset);
+
+  entry.result = output.blob;
+
+  entry.outputName =
+    safeName(entry.file.name.replace(/\.[^.]+$/,""))+
+    "_optimizado."+
+    output.ext;
+
+  entry.error = null;
+
+}
+
+// ======================================
+// BOTÓN OPTIMIZAR
+// ======================================
+
+$("optimize").onclick = async () => {
+
+  if(busy || !entries.length) return;
+
+  busy = true;
+
+  $("optimize").disabled = true;
+
+  $("zip").disabled = true;
+
+  const todo = entries.filter(e => !e.result);
+
+  const preset = presets[$("level").value];
+
+  let completed = 0;
+
+  for(const entry of todo) {
+
+    setStatus(
+      "Procesando "+entry.file.name+
+      " ("+(completed+1)+"/"+todo.length+")",
+      completed/Math.max(1,todo.length)*100
+    );
+
+    try {
+
+      await optimizeOne(entry,preset);
+
+    } catch(error) {
+
+      entry.error = error.message;
+
+    }
+
+    completed++;
+
+    render();
+
+    setStatus(
+      "Procesados "+completed+" de "+todo.length,
+      completed/Math.max(1,todo.length)*100
+    );
+
+  }
+
+  busy = false;
+
+  $("optimize").disabled = false;
+
+  const successful = entries.filter(e => e.result);
+
+  const before = successful.reduce(
+    (sum,e) => sum+e.file.size,0
+  );
+
+  const after = successful.reduce(
+    (sum,e) => sum+e.result.size,0
+  );
+
+  const saving = before
+    ? Math.round((1-after/before)*100)
+    : 0;
+
+  $("summary").innerHTML = `
+    <span>Correctos: <b>${successful.length}</b></span>
+    <span>Original: ${formatSize(before)}</span>
+    <span>Optimizado: <b>${formatSize(after)}</b></span>
+    <span>Ahorro: <b>${saving}%</b></span>
+  `;
+
+  setStatus("Optimización terminada.",100);
+
+  render();
+
+};
+
+// ======================================
+// DESCARGAR TODO EN ZIP
+// ======================================
+
+$("zip").onclick = async () => {
+
+  const ready = entries.filter(e => e.result);
+
+  if(!ready.length || !window.JSZip) return;
+
+  $("zip").disabled = true;
+
+  setStatus("Preparando ZIP...");
+
+  try {
+
+    const zip = new JSZip();
+
+    ready.forEach(entry => {
+
+      zip.file(entry.outputName,entry.result);
+
+    });
+
+    const blob = await zip.generateAsync(
+      {
+        type:"blob",
+        compression:"DEFLATE",
+        compressionOptions:{level:6}
+      },
+      metadata => {
+
+        setStatus(
+          "Creando ZIP... "+
+          Math.round(metadata.percent)+"%",
+          metadata.percent
+        );
+
+      }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+
+    a.href = url;
+
+    a.download = "MediaForge_optimizados.zip";
+
+    a.click();
+
+    setTimeout(() => URL.revokeObjectURL(url),30000);
+
+    setStatus("ZIP generado correctamente.",100);
+
+  } catch(error) {
+
+    setStatus("Error al crear ZIP: "+error.message);
+
+  }
+
+  $("zip").disabled = false;
+
+};
+
+// ======================================
+// LIMPIAR LISTA
+// ======================================
+
+$("clear").onclick = () => {
+
+  if(busy) return;
+
+  entries = [];
+
+  $("summary").textContent = "";
+
+  $("bar").style.width = "0%";
+
+  setStatus("Lista limpia.");
+
+  render();
+
+};
+
+// ======================================
+// ARRASTRAR Y SOLTAR
+// ======================================
+
+["dragenter","dragover"].forEach(event => {
+
+  drop.addEventListener(event,e => {
+
+    e.preventDefault();
+
+    drop.classList.add("over");
+
+  });
+
+});
+
+["dragleave","drop"].forEach(event => {
+
+  drop.addEventListener(event,e => {
+
+    e.preventDefault();
+
+    drop.classList.remove("over");
+
+  });
+
+});
+
+drop.addEventListener("drop",event => {
+
+  addFiles(event.dataTransfer.files);
+
+});
+
+render();
+
+</script>
+
+</body>
+        </html>
+        
