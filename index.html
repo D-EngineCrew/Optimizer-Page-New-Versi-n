@@ -78,11 +78,12 @@ header p {
   text-align:center;
   background:#241e36;
   cursor:pointer;
+  transition:.2s;
 }
 
-.drop.over {
-  border-color:var(--accent);
+.drop:active {
   background:#30234a;
+  border-color:var(--accent);
 }
 
 .drop strong {
@@ -174,6 +175,7 @@ button:disabled {
 .list {
   display:grid;
   gap:10px;
+  margin-top:15px;
 }
 
 .item {
@@ -288,55 +290,63 @@ button:disabled {
 
 <section class="panel">
 
-<label class="drop" id="drop" for="files">
-  <div style="font-size:35px">☁️</div>
-  <strong>Selecciona tus imágenes y videos</strong>
-  <small>Arrastra archivos aquí o pulsa para seleccionarlos.</small>
-</label>
-
-<input id="files" type="file" accept="image/*,video/*" multiple>
-
-<div class="controls">
-
-  <div class="field">
-    <label>Tipo de optimizador</label>
-    <select id="mode">
-      <option value="auto">Automático</option>
-      <option value="image">Solo imágenes</option>
-      <option value="video">Solo videos</option>
-    </select>
+  <div class="drop" id="drop" role="button" tabindex="0">
+    <div style="font-size:35px">☁️</div>
+    <strong>Seleccionar imágenes y videos</strong>
+    <small>Pulsa aquí para abrir Files o arrastra tus archivos.</small>
   </div>
 
-  <div class="field">
-    <label>Nivel de compresión</label>
-    <select id="level">
-      <option value="high">Alto - Mejor calidad</option>
-      <option value="medium" selected>Medio - Equilibrado</option>
-      <option value="ultra">Ultra - Menor tamaño</option>
-    </select>
+  <!-- Selector nativo de archivos Android -->
+  <input
+    id="files"
+    type="file"
+    accept="image/*,video/*"
+    multiple
+  >
+
+  <div class="controls">
+
+    <div class="field">
+      <label>Tipo de optimizador</label>
+      <select id="mode">
+        <option value="auto">Automático</option>
+        <option value="image">Solo imágenes</option>
+        <option value="video">Solo videos</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Nivel de compresión</label>
+      <select id="level">
+        <option value="high">Alto - Mejor calidad</option>
+        <option value="medium" selected>Medio - Equilibrado</option>
+        <option value="ultra">Ultra - Menor tamaño</option>
+      </select>
+    </div>
+
   </div>
 
-</div>
+  <div class="actions">
+    <button id="optimize">⚡ Optimizar archivos</button>
 
-<div class="actions">
-  <button id="optimize">⚡ Optimizar archivos</button>
-  <button class="secondary" id="zip" disabled>
-    ⬇ Descargar todo en ZIP
-  </button>
-  <button class="secondary" id="clear">
-    Limpiar lista
-  </button>
-</div>
+    <button class="secondary" id="zip" disabled>
+      ⬇ Descargar todo en ZIP
+    </button>
 
-<div class="progress">
-  <div class="bar" id="bar"></div>
-</div>
+    <button class="secondary" id="clear">
+      Limpiar lista
+    </button>
+  </div>
 
-<div class="status" id="status">
-  Añade archivos para comenzar.
-</div>
+  <div class="progress">
+    <div class="bar" id="bar"></div>
+  </div>
 
-<div class="summary" id="summary"></div>
+  <div class="status" id="status">
+    Añade archivos para comenzar.
+  </div>
+
+  <div class="summary" id="summary"></div>
 
 </section>
 
@@ -358,7 +368,7 @@ button:disabled {
 
 <p class="note">
   Los videos se exportan en WebM mediante MediaRecorder.
-  El formato depende de la compatibilidad del navegador.
+  La compatibilidad depende del navegador y del dispositivo.
 </p>
 
 </main>
@@ -378,11 +388,13 @@ const presets = {
     width:2560,
     bitrate:2800000
   },
+
   medium: {
     quality:0.62,
     width:1920,
     bitrate:1600000
   },
+
   ultra: {
     quality:0.42,
     width:1280,
@@ -391,9 +403,9 @@ const presets = {
 };
 
 function formatSize(bytes) {
-  if(!Number.isFinite(bytes)) return "—";
 
   const units = ["B","KB","MB","GB"];
+
   let i = 0;
 
   while(bytes >= 1024 && i < units.length-1) {
@@ -409,12 +421,52 @@ function safeName(name) {
 }
 
 function setStatus(message,progress) {
+
   $("status").textContent = message;
 
   if(progress !== undefined) {
     $("bar").style.width = progress+"%";
   }
 }
+
+// ======================================
+// SELECTOR NATIVO DE ANDROID / FILES
+// ======================================
+
+const fileInput = $("files");
+const drop = $("drop");
+
+function openFilePicker() {
+
+  if(busy) return;
+
+  // Debe ejecutarse directamente desde el toque del usuario.
+  fileInput.click();
+}
+
+drop.addEventListener("click",openFilePicker);
+
+drop.addEventListener("keydown",event => {
+
+  if(event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    openFilePicker();
+  }
+
+});
+
+fileInput.addEventListener("change",event => {
+
+  addFiles(event.target.files);
+
+  // Permite volver a seleccionar el mismo archivo.
+  fileInput.value = "";
+
+});
+
+// ======================================
+// AÑADIR ARCHIVOS
+// ======================================
 
 function addFiles(files) {
 
@@ -431,25 +483,32 @@ function addFiles(files) {
       error:null,
       outputName:null
     });
+
   }
 
   render();
 }
 
+// ======================================
+// MOSTRAR ARCHIVOS
+// ======================================
+
 function render() {
 
-  $("count").textContent =
-    entries.length+" archivos";
+  $("count").textContent = entries.length+" archivos";
 
   $("zip").disabled =
     !entries.some(e => e.result) || busy;
 
   const list = $("list");
+
   list.innerHTML = "";
 
   if(!entries.length) {
+
     list.innerHTML =
       '<div class="empty">Todavía no hay archivos.</div>';
+
     return;
   }
 
@@ -468,9 +527,13 @@ function render() {
       : "thumb fileicon";
 
     if(visual.tagName === "IMG") {
+
       visual.src = URL.createObjectURL(e.file);
+
     } else {
+
       visual.textContent = "▶";
+
     }
 
     const info = document.createElement("div");
@@ -498,6 +561,7 @@ function render() {
     if(e.result) {
 
       const download = document.createElement("a");
+
       download.className = "mini";
       download.textContent = "Descargar";
 
@@ -505,25 +569,35 @@ function render() {
       download.download = e.outputName;
 
       actions.append(download);
+
     }
 
     const remove = document.createElement("button");
+
     remove.className = "mini secondary";
     remove.textContent = "Quitar";
 
     remove.onclick = () => {
+
       entries = entries.filter(x => x !== e);
+
       render();
+
     };
 
     actions.append(remove);
 
     row.append(visual,info,actions);
+
     list.append(row);
+
   });
+
 }
 
+// ======================================
 // OPTIMIZAR IMÁGENES
+// ======================================
 
 function canvasBlob(canvas,type,quality) {
 
@@ -532,11 +606,13 @@ function canvasBlob(canvas,type,quality) {
     canvas.toBlob(blob => {
 
       if(blob) resolve(blob);
+
       else reject(new Error("No se pudo codificar la imagen."));
 
     },type,quality);
 
   });
+
 }
 
 async function optimizeImage(file,preset) {
@@ -551,6 +627,7 @@ async function optimizeImage(file,preset) {
   const canvas = document.createElement("canvas");
 
   canvas.width = Math.max(1,Math.round(bitmap.width*scale));
+
   canvas.height = Math.max(1,Math.round(bitmap.height*scale));
 
   const ctx = canvas.getContext("2d");
@@ -574,9 +651,12 @@ async function optimizeImage(file,preset) {
     blob,
     ext:type === "image/png" ? "png" : "jpg"
   };
+
 }
 
+// ======================================
 // OPTIMIZAR VIDEOS
+// ======================================
 
 async function optimizeVideo(file,preset) {
 
@@ -591,11 +671,13 @@ async function optimizeVideo(file,preset) {
   video.preload = "auto";
 
   const source = URL.createObjectURL(file);
+
   video.src = source;
 
   await new Promise((resolve,reject) => {
 
     video.onloadedmetadata = resolve;
+
     video.onerror = () => reject(
       new Error("No se pudo leer el video.")
     );
@@ -626,6 +708,7 @@ async function optimizeVideo(file,preset) {
   );
 
   const ctx = canvas.getContext("2d");
+
   const stream = canvas.captureStream(24);
 
   const mime = [
@@ -640,13 +723,13 @@ async function optimizeVideo(file,preset) {
 
     recorder = new MediaRecorder(stream,{
       mimeType:mime,
-      videoBitsPerSecond:preset.bitrate,
-      audioBitsPerSecond:96000
+      videoBitsPerSecond:preset.bitrate
     });
 
   } catch(error) {
 
     stream.getTracks().forEach(t => t.stop());
+
     URL.revokeObjectURL(source);
 
     throw new Error("No se pudo iniciar el codificador.");
@@ -655,8 +738,12 @@ async function optimizeVideo(file,preset) {
 
   const chunks = [];
 
-  recorder.ondataavailable = e => {
-    if(e.data.size) chunks.push(e.data);
+  recorder.ondataavailable = event => {
+
+    if(event.data.size) {
+      chunks.push(event.data);
+    }
+
   };
 
   const finished = new Promise((resolve,reject) => {
@@ -679,8 +766,6 @@ async function optimizeVideo(file,preset) {
 
   await new Promise((resolve,reject) => {
 
-    let frame;
-
     function draw() {
 
       if(video.ended) {
@@ -695,10 +780,12 @@ async function optimizeVideo(file,preset) {
         canvas.height
       );
 
-      frame = requestAnimationFrame(draw);
+      requestAnimationFrame(draw);
+
     }
 
     video.onended = resolve;
+
     video.onerror = reject;
 
     draw();
@@ -714,6 +801,7 @@ async function optimizeVideo(file,preset) {
   stream.getTracks().forEach(t => t.stop());
 
   video.pause();
+
   video.removeAttribute("src");
 
   URL.revokeObjectURL(source);
@@ -726,9 +814,12 @@ async function optimizeVideo(file,preset) {
     blob,
     ext:"webm"
   };
+
 }
 
-// PROCESAMIENTO
+// ======================================
+// PROCESAR ARCHIVOS
+// ======================================
 
 async function optimizeOne(entry,preset) {
 
@@ -756,9 +847,12 @@ async function optimizeOne(entry,preset) {
     output.ext;
 
   entry.error = null;
+
 }
 
+// ======================================
 // BOTÓN OPTIMIZAR
+// ======================================
 
 $("optimize").onclick = async () => {
 
@@ -767,9 +861,11 @@ $("optimize").onclick = async () => {
   busy = true;
 
   $("optimize").disabled = true;
+
   $("zip").disabled = true;
 
   const todo = entries.filter(e => !e.result);
+
   const preset = presets[$("level").value];
 
   let completed = 0;
@@ -800,6 +896,7 @@ $("optimize").onclick = async () => {
       "Procesados "+completed+" de "+todo.length,
       completed/Math.max(1,todo.length)*100
     );
+
   }
 
   busy = false;
@@ -827,15 +924,15 @@ $("optimize").onclick = async () => {
     <span>Ahorro: <b>${saving}%</b></span>
   `;
 
-  setStatus(
-    "Optimización terminada.",
-    100
-  );
+  setStatus("Optimización terminada.",100);
 
   render();
+
 };
 
-// DESCARGAR ZIP
+// ======================================
+// DESCARGAR TODO EN ZIP
+// ======================================
 
 $("zip").onclick = async () => {
 
@@ -852,7 +949,9 @@ $("zip").onclick = async () => {
     const zip = new JSZip();
 
     ready.forEach(entry => {
+
       zip.file(entry.outputName,entry.result);
+
     });
 
     const blob = await zip.generateAsync(
@@ -862,11 +961,13 @@ $("zip").onclick = async () => {
         compressionOptions:{level:6}
       },
       metadata => {
+
         setStatus(
           "Creando ZIP... "+
           Math.round(metadata.percent)+"%",
           metadata.percent
         );
+
       }
     );
 
@@ -875,6 +976,7 @@ $("zip").onclick = async () => {
     const a = document.createElement("a");
 
     a.href = url;
+
     a.download = "MediaForge_optimizados.zip";
 
     a.click();
@@ -890,9 +992,12 @@ $("zip").onclick = async () => {
   }
 
   $("zip").disabled = false;
+
 };
 
-// LIMPIAR
+// ======================================
+// LIMPIAR LISTA
+// ======================================
 
 $("clear").onclick = () => {
 
@@ -907,20 +1012,12 @@ $("clear").onclick = () => {
   setStatus("Lista limpia.");
 
   render();
+
 };
 
-// SELECCIÓN DE ARCHIVOS
-
-$("files").onchange = event => {
-
-  addFiles(event.target.files);
-
-  event.target.value = "";
-};
-
-// ARRASTRAR ARCHIVOS
-
-const drop = $("drop");
+// ======================================
+// ARRASTRAR Y SOLTAR
+// ======================================
 
 ["dragenter","dragover"].forEach(event => {
 
@@ -946,13 +1043,16 @@ const drop = $("drop");
 
 });
 
-drop.addEventListener("drop",e => {
-  addFiles(e.dataTransfer.files);
+drop.addEventListener("drop",event => {
+
+  addFiles(event.dataTransfer.files);
+
 });
 
 render();
 
 </script>
+
 </body>
   </html>
-    
+  
